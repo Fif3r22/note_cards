@@ -15,8 +15,8 @@ class MainApp extends StatelessWidget {
         body: Center(
           child: Column(
             children: <Widget>[
-              NoteCard(icon: Icons.drag_indicator, title: "Card 1", content: "Bla bla bla"),
-              NoteCard(content: "Lorem ipsum dolor sit...")
+              NoteCard(note: Note(id: 0, title: "Card 1", content: "Bla bla bla")),
+              NoteCard(note: Note(id: 1, content: "Lorem ipsum dolor sit...")),
             ],
           ),
         ),
