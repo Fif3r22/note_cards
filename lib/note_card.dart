@@ -48,9 +48,10 @@ class NoteCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: ListTile(
-        leading: Icon(Icons.drag_indicator),
-        title: Text(note.title),
-        subtitle: Text(note.content),
+        //leading: Icon(Icons.drag_indicator),
+        leading: SelectableText("${note.id}"),
+        title: SelectableText(note.content),
+        subtitle: SelectableText(note.title),
       ),
     );
   }

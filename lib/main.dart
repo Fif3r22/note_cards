@@ -22,27 +22,56 @@ class NotesApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
       home: Scaffold(
+        appBar: AppBar(title: Text("Notes App")),
         body: Center(
           child: NotesView(),
         ),
-        floatingActionButton: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-          FloatingActionButton(
-            child: const Icon(Icons.add),
-            onPressed: () {
-              ref.read(notesProvider.notifier).insertNote(Note());
-            },
+        bottomNavigationBar: BottomRow(),
+        //floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      )
+    );
+  }
+}
+
+class BottomRow extends ConsumerWidget {
+  final TextEditingController _controller = TextEditingController();
+  
+  BottomRow({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Padding(
+      padding: EdgeInsetsGeometry.all(6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Expanded(
+            child: TextField(
+              controller: _controller,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                hintText: "Start typing your note here",
+              ),
+            )
           ),
-          FloatingActionButton(
-            child: const Icon(Icons.remove),
-            onPressed: () {
-              ref.read(notesProvider.notifier).clearNotes();
-            },
+          Padding(
+            padding: EdgeInsetsGeometry.all(6),
+            child: Ink(
+              decoration: const ShapeDecoration(
+                color: Colors.lightBlue,
+                shape: CircleBorder(),
+              ),
+              child: IconButton(
+                //iconSize: 50,
+                icon: const Icon(Icons.add, color: Colors.white),
+                onPressed: () {
+                  ref.read(notesProvider.notifier).insertNote(Note(content: _controller.text));
+                  _controller.clear();
+                },
+              )
+            )
           ),
-          ],
-        ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+        ],
       )
     );
   }
