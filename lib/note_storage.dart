@@ -11,19 +11,20 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 // App classes
-import 'package:note_cards/note_card.dart';
+import 'note_card.dart';
 
 // NoteStorage Class
 
 class NoteStorage {
-  late final Database database;
-  final String databaseFile;
-  late final String databasePath;
-
-  NoteStorage({this.databaseFile = 'note_database.db'}); // Basic constructor
+  static Database? _db;
   
-  // Must be called before the database can be used
-  Future<void> initialize() async {
+  static Future<Database> get database async {
+    if (_db != null) return _db!;
+    _db = await _initDB('notes.db');
+    return _db!;
+  }
+
+  static Future<Database> _initDB(String filePath) async {
     // Setup sqflite for cross-paltform use
     if (Platform.isAndroid || Platform.isIOS || Platform.isMacOS) {
       // For mobile and macOS, the databaseFactory is set by default
@@ -35,38 +36,46 @@ class NoteStorage {
 
     // Set the path to the database. If the platform is Android, using [getDatabasesPath()] is appropriate,
     // otherwise use [getApplicationDocumentsDirectory()]
-    databasePath = Platform.isAndroid ? await getDatabasesPath() : (await getApplicationDocumentsDirectory()).path;
-    
-    // Create a database and store the reference
-    database = await openDatabase(
-      join(databasePath, databaseFile), // Specify the path
-      onCreate: (db, version) => db.execute('CREATE TABLE notes(id INTEGER PRIMARY KEY, title TEXT, content TEXT)'), // Create a table to store notes 
+    final String databasePath = Platform.isAndroid ? await getDatabasesPath() : (await getApplicationDocumentsDirectory()).path;
+    final String path = join(databasePath, filePath);
+
+    // Return a reference to a database
+    return await openDatabase(
+      path, // Specify the path
       version: 1, // Set the version. This executes the onCreate function
+      onCreate: (db, version) async { // Create a table to store notes 
+        await db.execute('''
+          CREATE TABLE notes(
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                title TEXT,
+                content TEXT
+          )''');
+      },
     );
   }
   
   // Clear all notes
-  Future<void> clear() async {
-    database.delete('notes');
+  static Future<void> clearNotes() async {
+    final db = await database;
+    db.delete('notes');
   }
 
   // Insert a Note into the database and replace any duplicate notes already in the database
-  Future<void> addNote(Note note) async {
-    await database.insert(
+  static Future<void> insertNote(Note note) async {
+    final db = await database;
+    db.insert(
       'notes', // Table to use
       note.toMap(), // Converts the Note to a Map<String, Object?>
       conflictAlgorithm: ConflictAlgorithm.replace, // Specifies the algorithm to resolve duplicate entries
     );
   }
+  
+  // Get all notes in the database
+  static Future<List<Note>> getNotes() async {
+    final db = await database;
+    final maps = await db.query('notes');
 
-  Future<List<Note>> getNotes() async {
-    // Query the table for all the notes
-    final List<Map<String, Object?>> noteMaps = await database.query('notes');
-
-    // Return the List<Map<String, Object?>> as a List<Note> using a list comprehension
-    return [
-      for (final {"id" : id as int, 'title' : title as String, 'content' : content as String} in noteMaps)
-      Note(id: id, title: title, content: content)
-    ];
+    // Return a list of all the notes
+    return maps.map((map) => Note.fromMap(map)).toList();
   }
 }
