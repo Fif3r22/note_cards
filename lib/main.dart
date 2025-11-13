@@ -25,12 +25,24 @@ class NotesApp extends ConsumerWidget {
         body: Center(
           child: NotesView(),
         ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
+        floatingActionButton: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+          FloatingActionButton(
+            child: const Icon(Icons.add),
+            onPressed: () {
               ref.read(notesProvider.notifier).insertNote(Note());
-          },
-          child: const Icon(Icons.add),
+            },
+          ),
+          FloatingActionButton(
+            child: const Icon(Icons.remove),
+            onPressed: () {
+              ref.read(notesProvider.notifier).clearNotes();
+            },
+          ),
+          ],
         ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       )
     );
   }
