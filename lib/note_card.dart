@@ -24,6 +24,11 @@ class Note {
   // Implement toString to make info easy to see when using print()
   @override
   String toString() => 'Note{id: $id, title: $title, content: $content}';
+  
+  // For when Note is inserted into a database and assigned an ID
+  factory Note.withID({required int id, required String title, required String content}) {
+    return Note(id: id, title: title, content: content);
+  }
 
   // Make a factory constructor to convert a Note from a Map<String, Object?>
   factory Note.fromMap(Map<String, Object?> map) {
@@ -36,8 +41,12 @@ class Note {
 }
 
 
-//  NoteCard Class
-
+// NoteCard Class
+// Toggles between edit mode and display mode using a button
+// In display mode, the text portion of the widget is displayed as a textbutton
+// When the button is clicked the state is updated to edit mode
+// In edit mode, the text portion is displayed with a textfield with a save button and a cancel button
+// When the save button or cancel button is pressed, the note is either saved or not, and the state is updated to display mode
 class NoteCard extends StatelessWidget {
   final Note note;
 
@@ -50,7 +59,15 @@ class NoteCard extends StatelessWidget {
       child: ListTile(
         //leading: Icon(Icons.drag_indicator),
         leading: SelectableText("${note.id}"),
-        title: SelectableText(note.content),
+        title: TextButton(
+          style: TextButton.styleFrom(
+            foregroundColor: Colors.black,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+            alignment: Alignment.centerLeft,
+          ),
+          child: Text(note.content),
+          onPressed: () {},
+        ),
         subtitle: SelectableText(note.title),
       ),
     );

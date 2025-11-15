@@ -17,12 +17,17 @@ class NotesNotifier extends AsyncNotifier<List<Note>> {
     state = AsyncData([]);
   }
 
-  Future<void> insertNote(Note note) async {
-    await NoteStorage.insertNote(note);
+  Future<int> insertNote(Note note) async {
+    // Insert the note and extract the ID
+    final id = await NoteStorage.insertNote(note);
+    note = Note.withID(id: id, title: note.title, content: note.content);
 
     // Update state safely
     final current = state.value ?? [];
     state = AsyncData([...current, note]);
+
+    // Return the ID
+    return id;
   }
 
 }

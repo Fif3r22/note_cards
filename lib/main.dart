@@ -3,10 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'note_card.dart';
 import 'notes_provider.dart';
 
-// TO-DO:
-// * Implement the NotesNotifier in the UI
-// * Refactor App to use NotesNotifier for state
-
 void main() async {
   runApp(const ProviderScope(
     child: NotesApp()

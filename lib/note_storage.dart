@@ -61,9 +61,9 @@ class NoteStorage {
   }
 
   // Insert a Note into the database and replace any duplicate notes already in the database
-  static Future<void> insertNote(Note note) async {
+  static Future<int> insertNote(Note note) async {
     final db = await database;
-    db.insert(
+    return db.insert(
       'notes', // Table to use
       note.toMap(), // Converts the Note to a Map<String, Object?>
       conflictAlgorithm: ConflictAlgorithm.replace, // Specifies the algorithm to resolve duplicate entries
