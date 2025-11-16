@@ -18,16 +18,40 @@ class NotesNotifier extends AsyncNotifier<List<Note>> {
   }
 
   Future<int> insertNote(Note note) async {
-    // Insert the note and extract the ID
-    final id = await NoteStorage.insertNote(note);
-    note = Note.withID(id: id, title: note.title, content: note.content);
+    
+    if (note.id == null) {
+      // Insert the note and extract the ID
+      final id = await NoteStorage.insertNote(note);
+      note = Note.withID(id: id, title: note.title, content: note.content);
+  
+      // Update state safely
+      final current = state.value ?? [];
+      state = AsyncData([...current, note]);
+  
+      // Return the ID
+      return id;
+    } else {
+      // Inserts the note
+      final id = await NoteStorage.insertNote(note);
 
-    // Update state safely
-    final current = state.value ?? [];
-    state = AsyncData([...current, note]);
+      // Reloads all the notes
+      loadNotes();
 
-    // Return the ID
-    return id;
+      // Returns the id of the note
+      return id;
+    }
+  }
+  
+  Future<void> deleteNote(Note note) async {
+    // Delete the note from the database
+    await NoteStorage.deleteNote(note);
+    // Reload the notes
+    loadNotes();
+  }
+
+  Future<void> loadNotes() async {
+    // Reloads all the notes
+    state = AsyncData(await NoteStorage.getNotes());
   }
 
 }

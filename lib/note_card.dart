@@ -47,7 +47,7 @@ class Note {
 // When the button is clicked the state is updated to edit mode
 // In edit mode, the text portion is displayed with a textfield with a save button and a cancel button
 // When the save button or cancel button is pressed, the note is either saved or not, and the state is updated to display mode
-class NoteCard extends StatelessWidget {
+/*class NoteCard extends StatelessWidget {
   final Note note;
 
   const NoteCard(this.note, {super.key,});
@@ -69,6 +69,86 @@ class NoteCard extends StatelessWidget {
           onPressed: () {},
         ),
         subtitle: SelectableText(note.title),
+      ),
+    );
+  }
+
+}*/
+
+enum Mode {view, edit}
+
+// Refactored into a ConsumerStatefulWidget
+class NoteCard extends ConsumerStatefulWidget {
+  final Note note;
+
+  const NoteCard(this.note, {super.key,});
+
+  @override
+  ConsumerState<NoteCard> createState() => _NoteCardState();
+}
+
+class _NoteCardState extends ConsumerState<NoteCard> {
+  Mode mode = Mode.view;
+
+  @override
+  Widget build(BuildContext context) {
+    // Build based on the current mode
+    if (mode == Mode.view) {
+      return viewMode(context); // If it's in view mode
+    } else {
+      return editMode(context); // If it's in edit mode
+    }
+  }
+
+  Widget viewMode(BuildContext context) {
+    return Card(
+      child: ListTile(
+        leading: Text("${widget.note.id}"),
+        title: TextButton(
+          style: TextButton.styleFrom(
+            foregroundColor: Colors.black,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+            alignment: Alignment.centerLeft,
+          ),
+          child: Text(widget.note.content),
+          onPressed: () {
+            setState(() => mode = Mode.edit);
+          },
+        ),
+        subtitle: Text(widget.note.title),
+      ),
+    );
+  }
+
+  Widget editMode(BuildContext context) {
+    TextEditingController controller = TextEditingController(text: widget.note.content);
+    return Card(
+      child: ListTile(
+        leading: SelectableText("${widget.note.id}"),
+        title: TextField(controller: controller),
+        subtitle: Row(
+          children: [
+            Text(widget.note.title),
+            IconButton(
+              icon: Icon(Icons.save),
+              onPressed: () {
+                // Save the note
+                ref.read(notesProvider.notifier).insertNote(Note(id: widget.note.id, title: widget.note.title, content: controller.text));
+                // Change the NoteCard into view mode
+                setState(() => mode = Mode.view);
+              },
+            ),
+            IconButton(
+              icon: Icon(Icons.delete),
+              onPressed: () {
+                // Delete the note
+                ref.read(notesProvider.notifier).deleteNote(widget.note);
+                // Call setState to update the widget
+                setState(() => mode = Mode.view);
+              },
+            ),
+          ]
+        ),
       ),
     );
   }

@@ -78,4 +78,16 @@ class NoteStorage {
     // Return a list of all the notes
     return maps.map((map) => Note.fromMap(map)).toList();
   }
+  
+  // Delete a specific note from the database
+  static Future<void> deleteNote(Note note) async {
+    final db = await database;
+
+    db.delete(
+      'notes',
+      where: 'id = ?',
+      whereArgs: [note.id],
+    );
+  }
+
 }
