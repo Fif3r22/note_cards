@@ -20,7 +20,7 @@ import 'note_card.dart';
 
 
 // NoteStorage Class handles Note storage, update, and retrieval
-class NoteStorage {
+class AppStorage {
   static Database? _db;
 
   // Getter to streamline first-time initialization
