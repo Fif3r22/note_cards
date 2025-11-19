@@ -22,15 +22,35 @@ import 'note_card.dart';
 // NoteStorage Class handles Note storage, update, and retrieval
 class AppStorage {
   static Database? _db;
+  static const List<DatabaseTable> _tables = [
+    DatabaseTable(
+      tableName: 'notes',
+      columns: {
+        'id': 'INTEGER PRIMARY KEY AUTOINCREMENT',
+        'title': 'TEXT',
+        'content': 'TEXT',
+      }
+    ),
+    DatabaseTable(
+      tableName: 'sources',
+      columns: {
+        'id': 'INTEGER PRIMARY KEY AUTOINCREMENT',
+        'author': 'TEXT',
+        'date': 'TEXT',
+        'title': 'TEXT',
+        'source': 'TEXT',
+      }
+    ),
+  ];
 
-  // Getter to streamline first-time initialization
+  // References the existing database or creates and references a new one if none exists
   static Future<Database> get database async {
     if (_db != null) return _db!;
     _db = await _initDB('notes.db');
     return _db!;
   }
 
-  // Initialize the database for the first time
+  // Initializes the database for the first time
   static Future<Database> _initDB(String filePath) async {
     // Setup sqflite for cross-paltform use
     if (Platform.isAndroid || Platform.isIOS || Platform.isMacOS) {
@@ -46,22 +66,19 @@ class AppStorage {
     final String databasePath = Platform.isAndroid ? await getDatabasesPath() : (await getApplicationDocumentsDirectory()).path;
     final String path = join(databasePath, filePath);
 
-    // Return a reference to a database
+    // Return a reference to the database
     return await openDatabase(
-      path, // Specify the path
+      path,
       version: 1, // Set the version. This executes the onCreate function
-      onCreate: (db, version) async { // Create a table to store notes 
-        await db.execute('''
-          CREATE TABLE notes(
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                title TEXT,
-                content TEXT
-          )''');
+      onCreate: (db, version) async { // Create a new table for each item in _tables
+        for (var table in _tables) {
+          await db.execute(table.createQuery());
+        }
       },
     );
   }
   
-  // Get all notes in the database as a dictionary of id: Note pairs
+  // Returns all notes in the database as a dictionary of id: Note pairs
   static Future<Map<int,Note>> getNotes() async {
     final db = await database;
     final maps = await db.query('notes');
@@ -71,13 +88,13 @@ class AppStorage {
     return <int,Note>{for (var note in notes) note.id: note};
   }
 
-  // Clear all notes
+  // Clears all notes in the database
   static Future<void> clearNotes() async {
     final db = await database;
     db.delete('notes');
   }
 
-  // Insert a Note into the database and replace any conflicts
+  // Inserts a Note into the database and replace any existing notes that have matching ids
   static Future<int> insertNote(Note note) async {
     // Load the database
     final db = await database;
@@ -90,7 +107,7 @@ class AppStorage {
     );
   }
 
-  // Delete a specific Note from the database
+  // Deletes a given Note from the database
   static Future<void> deleteNote(Note note) async {
     final db = await database;
 
@@ -101,4 +118,26 @@ class AppStorage {
     );
   }
 
+}
+
+// Uses a title and a Map of 'column name': 'SQLite type' to generate an SQL query to create such a table
+class DatabaseTable {
+  final String tableName;
+  final Map<String, String> columns; // Should be 'column name': 'SQLite type'
+
+  const DatabaseTable({required this.tableName, required this.columns});
+  
+  // Outputs an SQLite query that creates a table using tableName as the table's name
+  // and columns corresponding to the [columns] map
+  String createQuery() {
+    
+    var args = <String>[];
+    var keys = columns.keys;
+
+    // Iterates through each column and adds the correct column COLUMN TYPE string
+    for (var key in keys) {
+      args.add('$key ${columns[key]}');
+    }
+    return 'CREATE TABLE $tableName(${args.join(", ")})';
+  }
 }
