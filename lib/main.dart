@@ -23,7 +23,6 @@ class NotesApp extends ConsumerWidget {
           child: NotesView(),
         ),
         bottomNavigationBar: BottomRow(),
-        //floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       )
     );
   }

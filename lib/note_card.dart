@@ -42,42 +42,8 @@ class Note {
 
 
 // NoteCard Class
-// Toggles between edit mode and display mode using a button
-// In display mode, the text portion of the widget is displayed as a textbutton
-// When the button is clicked the state is updated to edit mode
-// In edit mode, the text portion is displayed with a textfield with a save button and a cancel button
-// When the save button or cancel button is pressed, the note is either saved or not, and the state is updated to display mode
-/*class NoteCard extends StatelessWidget {
-  final Note note;
-
-  const NoteCard(this.note, {super.key,});
-  
-  // Builds a list tile to display the info saved in [Note note]
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: ListTile(
-        //leading: Icon(Icons.drag_indicator),
-        leading: SelectableText("${note.id}"),
-        title: TextButton(
-          style: TextButton.styleFrom(
-            foregroundColor: Colors.black,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-            alignment: Alignment.centerLeft,
-          ),
-          child: Text(note.content),
-          onPressed: () {},
-        ),
-        subtitle: SelectableText(note.title),
-      ),
-    );
-  }
-
-}*/
 
 enum Mode {view, edit}
-
-// Refactored into a ConsumerStatefulWidget
 class NoteCard extends ConsumerStatefulWidget {
   final Note note;
 
@@ -182,39 +148,3 @@ class NotesView extends ConsumerWidget {
     }
   }
 }
-
-/*
-class NotesView extends StatefulWidget {
-  final List<Note> notes;
-
-  const NotesView({super.key, required this.notes});
-
-  @override
-  State<NotesView> createState() => _NotesViewState();
-}
-
-class _NotesViewState extends State<NotesView> {
-  late List<Note> _notes;
-  
-  @override
-  void initState() {
-    super.initState();
-    // Copy initial notes so we can mutate the list
-    _notes = List<Note>.from(widget.notes);
-  }
-  
-  void addNote(Note note) {
-    setState(() {
-      _notes.add(note);
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-            itemCount: _notes.length,
-            prototypeItem: NoteCard(note: _notes.first),
-            itemBuilder: (context, index) => NoteCard(note: _notes[index]),
-          );
-  }
-}*/
