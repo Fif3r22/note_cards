@@ -4,26 +4,33 @@
 // Async operations and platform detection
 import 'dart:async';
 import 'dart:io';
+
 // File path management
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
-// Basic sqflite for mobile and macOS, sqflite_common_ffi for desktop
+
+// Basic sqflite for SQLite databases on mobile and macOS
 import 'package:sqflite/sqflite.dart';
+
+// Sqflite_common_ffi for SQLite databases on desktop
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+
 // App classes
 import 'note_card.dart';
 
-// NoteStorage Class
 
+// NoteStorage Class handles Note storage, update, and retrieval
 class NoteStorage {
   static Database? _db;
-  
+
+  // Getter to streamline first-time initialization
   static Future<Database> get database async {
     if (_db != null) return _db!;
     _db = await _initDB('notes.db');
     return _db!;
   }
 
+  // Initialize the database for the first time
   static Future<Database> _initDB(String filePath) async {
     // Setup sqflite for cross-paltform use
     if (Platform.isAndroid || Platform.isIOS || Platform.isMacOS) {
@@ -54,32 +61,36 @@ class NoteStorage {
     );
   }
   
+  // Get all notes in the database as a dictionary of id: Note pairs
+  static Future<Map<int,Note>> getNotes() async {
+    final db = await database;
+    final maps = await db.query('notes');
+
+    // Return a dictionary of all the notes with their id as the key
+    Iterable notes = maps.map((map) => Note.fromMap(map));
+    return <int,Note>{for (var note in notes) note.id: note};
+  }
+
   // Clear all notes
   static Future<void> clearNotes() async {
     final db = await database;
     db.delete('notes');
   }
 
-  // Insert a Note into the database and replace any duplicate notes already in the database
+  // Insert a Note into the database and replace any conflicts
   static Future<int> insertNote(Note note) async {
+    // Load the database
     final db = await database;
+
+    // Insert the note into the database
     return db.insert(
-      'notes', // Table to use
-      note.toMap(), // Converts the Note to a Map<String, Object?>
-      conflictAlgorithm: ConflictAlgorithm.replace, // Specifies the algorithm to resolve duplicate entries
+      'notes',
+      note.toMap(),
+      conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
-  
-  // Get all notes in the database
-  static Future<List<Note>> getNotes() async {
-    final db = await database;
-    final maps = await db.query('notes');
 
-    // Return a list of all the notes
-    return maps.map((map) => Note.fromMap(map)).toList();
-  }
-  
-  // Delete a specific note from the database
+  // Delete a specific Note from the database
   static Future<void> deleteNote(Note note) async {
     final db = await database;
 

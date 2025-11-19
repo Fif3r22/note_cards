@@ -122,6 +122,7 @@ class _NoteCardState extends ConsumerState<NoteCard> {
 
   Widget editMode(BuildContext context) {
     TextEditingController controller = TextEditingController(text: widget.note.content);
+
     return Card(
       child: ListTile(
         leading: SelectableText("${widget.note.id}"),
@@ -130,10 +131,10 @@ class _NoteCardState extends ConsumerState<NoteCard> {
           children: [
             Text(widget.note.title),
             IconButton(
-              icon: Icon(Icons.save),
+              icon: Icon(Icons.check_circle_outline_sharp),
               onPressed: () {
                 // Save the note
-                ref.read(notesProvider.notifier).insertNote(Note(id: widget.note.id, title: widget.note.title, content: controller.text));
+                ref.read(notesProvider.notifier).saveNote(Note(id: widget.note.id, title: widget.note.title, content: controller.text));
                 // Change the NoteCard into view mode
                 setState(() => mode = Mode.view);
               },
@@ -163,15 +164,20 @@ class NotesView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final notesList = ref.watch(notesProvider).value;
-    
-    if (notesList == null || notesList.isEmpty) {
+    final notesMap = ref.watch(notesProvider).value;
+
+    if (notesMap == null || notesMap.isEmpty) {
       return ListView(children: []);
     } else {
+      // Gets the keys as a list so that the builder can iterate over them
+      final keys = notesMap.keys.toList();
+      // Build the list of notes for the view
       return ListView.builder(
-          itemCount: notesList.length,
-          prototypeItem: NoteCard(notesList.first),
-          itemBuilder: (context, index) => NoteCard(notesList[index]),
+          itemCount: notesMap.length,
+          itemBuilder: (context, index) {
+            final key = keys[index];
+            return NoteCard(notesMap[key] ?? Note());
+          }
       );
     }
   }

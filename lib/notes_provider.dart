@@ -2,59 +2,55 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'note_card.dart';
 import 'note_storage.dart';
 
-// Uses the static class NoteStorage to perform operations on a database and expose the data to the app
-class NotesNotifier extends AsyncNotifier<List<Note>> {
+// Perform operations on a database and expose the data to the app
+class NotesNotifier extends AsyncNotifier<Map<int,Note>> {
   @override
-  Future<List<Note>> build() async {
+  Future<Map<int,Note>> build() async {
     // Initial load
     return await NoteStorage.getNotes();
   }
 
-  Future<void> clearNotes() async {
-    await NoteStorage.clearNotes();
-
-    // Update state
-    state = AsyncData([]);
-  }
-
-  Future<int> insertNote(Note note) async {
-    
-    if (note.id == null) {
-      // Insert the note and extract the ID
-      final id = await NoteStorage.insertNote(note);
-      note = Note.withID(id: id, title: note.title, content: note.content);
-  
-      // Update state safely
-      final current = state.value ?? [];
-      state = AsyncData([...current, note]);
-  
-      // Return the ID
-      return id;
-    } else {
-      // Inserts the note
-      final id = await NoteStorage.insertNote(note);
-
-      // Reloads all the notes
-      loadNotes();
-
-      // Returns the id of the note
-      return id;
-    }
-  }
-  
-  Future<void> deleteNote(Note note) async {
-    // Delete the note from the database
-    await NoteStorage.deleteNote(note);
-    // Reload the notes
-    loadNotes();
-  }
-
+  // Load all the Notes in the database and update state
   Future<void> loadNotes() async {
     // Reloads all the notes
     state = AsyncData(await NoteStorage.getNotes());
   }
 
+  // Clear all Notes from the database and update the state
+  Future<void> clearNotes() async {
+    // Delete all notes in the database
+    await NoteStorage.clearNotes();
+
+    // Update state to be an empty dictionary
+    state = AsyncData(<int,Note>{});
+  }
+
+  // Insert or update a Note in the database and update the state
+  Future<int> saveNote(Note note) async {
+      // Insert the note and extract the ID
+      final id = await NoteStorage.insertNote(note);
+      note = Note.withID(id: id, title: note.title, content: note.content);
+  
+      // Update the state safely
+      final current = state.value ?? <int,Note>{};
+      state = AsyncData({...current, id: note});
+
+      // Return the ID
+      return id;
+  }
+
+  // Delete a Note from the database and update the state
+  Future<void> deleteNote(Note note) async {
+    // Delete the note from the database
+    await NoteStorage.deleteNote(note);
+    
+    // Updates the state safely
+    final current = state.value ?? <int,Note>{};
+    current.remove(note.id); // Only remove the note if the state is not null
+    state = AsyncData({...current});
+  }
+
 }
 
-// Expose the provider to the app
-final notesProvider = AsyncNotifierProvider<NotesNotifier, List<Note>>(NotesNotifier.new);
+// Expose the note provider to the app
+final notesProvider = AsyncNotifierProvider<NotesNotifier, Map<int,Note>>(NotesNotifier.new);

@@ -61,7 +61,7 @@ class BottomRow extends ConsumerWidget {
                 //iconSize: 50,
                 icon: const Icon(Icons.add, color: Colors.white),
                 onPressed: () {
-                  ref.read(notesProvider.notifier).insertNote(Note(content: _controller.text));
+                  ref.read(notesProvider.notifier).saveNote(Note(content: _controller.text));
                   _controller.clear();
                 },
               )
