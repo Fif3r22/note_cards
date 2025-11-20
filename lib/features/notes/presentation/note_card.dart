@@ -1,49 +1,12 @@
-// Defines the [Note], [NoteCard], and [NotesView] classes
-// [Note] contains and handles data such as title, source, and content
-// [NoteCard] is a widget to display a single [Note]
-// [NotesView] is a widget to display a list of [Note]s
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:note_cards/features/notes/application/notes_provider.dart';
+import 'package:note_cards/features/notes/domain/note.dart';
 
-import 'notes_provider.dart';
-
-// Note Class
-
-class Note {
-  final int? id;
-  final String title;
-  final String content;
-
-  const Note({this.id, this.title = '', this.content = ''});
-
-  // Convert the Note into a Map for database purposes. The keys must correspond to the
-  // names of the columns in the database table.
-  Map<String, Object?> toMap() => {'id': id, 'title': title, 'content': content};
-
-  // Implement toString to make info easy to see when using print()
-  @override
-  String toString() => 'Note{id: $id, title: $title, content: $content}';
-  
-  // For when Note is inserted into a database and assigned an ID
-  factory Note.withID({required int id, required String title, required String content}) {
-    return Note(id: id, title: title, content: content);
-  }
-
-  // Make a factory constructor to convert a Note from a Map<String, Object?>
-  factory Note.fromMap(Map<String, Object?> map) {
-    return Note(
-      id: map['id'] as int?, 
-      title: map['title'] as String, 
-      content: map['content'] as String,
-    );
-  }
-}
-
-
-// NoteCard Class
+// NoteCard Class displays a Note as a Material widget
 
 enum Mode {view, edit}
+
 class NoteCard extends ConsumerStatefulWidget {
   final Note note;
 
@@ -118,33 +81,5 @@ class _NoteCardState extends ConsumerState<NoteCard> {
         ),
       ),
     );
-  }
-}
-
-
-// NotesView Class
-
-class NotesView extends ConsumerWidget {
-    
-  const NotesView({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final notesMap = ref.watch(notesProvider).value;
-
-    if (notesMap == null || notesMap.isEmpty) {
-      return ListView(children: []);
-    } else {
-      // Gets the keys as a list so that the builder can iterate over them
-      final keys = notesMap.keys.toList();
-      // Build the list of notes for the view
-      return ListView.builder(
-          itemCount: notesMap.length,
-          itemBuilder: (context, index) {
-            final key = keys[index];
-            return NoteCard(notesMap[key] ?? Note());
-          }
-      );
-    }
   }
 }

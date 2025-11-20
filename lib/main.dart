@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'note_card.dart';
-import 'notes_provider.dart';
+import 'features/notes/domain/note.dart';
+import 'features/notes/application/notes_provider.dart';
+import 'package:note_cards/features/notes/presentation/notes_view.dart';
 
 void main() async {
   runApp(const ProviderScope(
