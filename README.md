@@ -1,6 +1,6 @@
 # Note Cards
 
-An app for taking notes
+An app for taking notes :3
 
 ### Features to work on
 - [ ] Polished note interactions
@@ -9,8 +9,8 @@ An app for taking notes
   - [ ] Container instead of button to detect clicks
   - [ ] Drag-and-drop organization(?)
 - [ ] Retrieving/taking notes based on source
-  - [ ] Source database for storing source information
-  - [ ] Adding/editing sources
+  - [X] Source database for storing source information
+  - [ ] Adding/editing sources from the UI
   - [ ] Sidebar to access sources
 - [ ] Outlines
   - [ ] Storage system for outlines (.json tree with note id refs?)
